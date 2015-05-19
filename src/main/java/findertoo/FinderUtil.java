@@ -1,36 +1,64 @@
-package com.luna.ce.util.gl;
+/*
+ * This file is part of FinderToo, licensed under MIT License (MIT).
+ *
+ * Copyright (c) 2015 liachmodded <http://github.com/liachmodded>
+ * Copyright (c) contributors
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+package findertoo;
 
 import static net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher.staticPlayerX;
 import static net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher.staticPlayerY;
 import static net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher.staticPlayerZ;
+import static org.lwjgl.opengl.GL11.*;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.WorldRenderer;
-import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.AxisAlignedBB;
-import org.lwjgl.util.glu.Cylinder;
-import org.lwjgl.util.glu.GLU;
 
-import static org.lwjgl.opengl.GL11.*;
+import javax.vecmath.Point3f;
 
-public final class GLHelper {
-    private static final Cylinder cyl;
+/**
+ * Created by liach on 5/17/2015.
+ *
+ * @author liach
+ */
+public class FinderUtil {
+    public static final float GOLDEN_RATIO = (float) (Math.sqrt(5)- 1) / 2f;
 
-    static {
-        cyl = new Cylinder();
-        cyl.setDrawStyle(GLU.GLU_FILL);
-        cyl.setNormals(GLU.GLU_SMOOTH);
-        cyl.setOrientation(GLU.GLU_OUTSIDE);
+    public static Point3f posEntity(Entity entity) {
+        return new Point3f((float) entity.posX, (float) entity.posY, (float) entity.posZ);
     }
 
     public static AxisAlignedBB getOffsetBB(double x, double y, double z, double l, double h, double w) {
         return AxisAlignedBB.fromBounds(x, y, z, x + l, y + h, z + w);
     }
 
-    public static void drawESP(final AxisAlignedBB bb, final double r, final double g, final double b) {
-        //Minecraft.getMinecraft().entityRenderer.disableLightmap(0);
+    public static void drawEsp(RgbAabb aabb) {
+        float r = aabb.color.getRed() / 255F;
+        float g = aabb.color.getGreen() / 255F;
+        float b = aabb.color.getBlue() / 255F;
+        //todo: use the distance to player to determine alpha
+        Minecraft.getMinecraft().entityRenderer.func_175072_h();
         glPushMatrix();
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -40,10 +68,12 @@ public final class GLHelper {
         glEnable(GL_LINE_SMOOTH);
         glDisable(GL_DEPTH_TEST);
         glDepthMask(false);
-        glColor4d(r, g, b, 0.1825F);
-        drawBoundingBox(bb);
-        glColor4d(r, g, b, 1.0F);
-        drawOutlinedBoundingBox(bb);
+        //todo: use the distance to player to determine alpha
+        glColor4f(r, g, b, 0.1825F);
+        drawBoundingBox(aabb);
+        //todo: use the distance to player to determine alpha
+        glColor4f(r, g, b, 1.0F);
+        drawOutlinedBoundingBox(aabb);
         glLineWidth(2.0F);
         glDisable(GL_LINE_SMOOTH);
         glEnable(GL_TEXTURE_2D);
@@ -55,38 +85,9 @@ public final class GLHelper {
         Minecraft.getMinecraft().entityRenderer.enableLightmap();
     }
 
-    public static void drawLines(final double x1, final double y1, final double z1, final double x2,
-                                 final double y2, final double z2, final float width, int color) {
-        //Minecraft.getMinecraft().entityRenderer.disableLightmap(0);
-        glPushMatrix();
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glLineWidth(width);
-        glDisable(GL_LIGHTING);
-        glDisable(GL_TEXTURE_2D);
-        glEnable(GL_LINE_SMOOTH);
-        glDisable(GL_DEPTH_TEST);
-        glDepthMask(false);
-        GuiUtils.color(color);
-        final Tessellator t = Tessellator.getInstance();
-        final WorldRenderer wr = t.getWorldRenderer();
-        wr.startDrawing(GL_LINES);
-        wr.addVertex(x1, y1, z1);
-        wr.addVertex(x2, y2, z2);
-        t.draw();
-        glDisable(GL_LINE_SMOOTH);
-        glEnable(GL_TEXTURE_2D);
-        glEnable(GL_LIGHTING);
-        glEnable(GL_DEPTH_TEST);
-        glDepthMask(true);
-        glDisable(GL_BLEND);
-        glPopMatrix();
-        Minecraft.getMinecraft().entityRenderer.enableLightmap();
-    }
-
     public static void drawBoundingBox(final AxisAlignedBB axisalignedbb) {
-        final Tessellator tessellator = Tessellator.getInstance();
-        final WorldRenderer wr = tessellator.getWorldRenderer();
+        Tessellator tessellator = Tessellator.getInstance();
+        WorldRenderer wr = tessellator.getWorldRenderer();
         wr.startDrawingQuads(); // starts x
         wr.addVertex(axisalignedbb.minX - staticPlayerX, axisalignedbb.minY
                 - staticPlayerY, axisalignedbb.minZ - staticPlayerZ);
@@ -201,8 +202,8 @@ public final class GLHelper {
      * Draws lines for the edges of the bounding box.
      */
     public static void drawOutlinedBoundingBox(final AxisAlignedBB axisalignedbb) {
-        final Tessellator var2 = Tessellator.getInstance();
-        final WorldRenderer v3 = var2.getWorldRenderer();
+        Tessellator v2 = Tessellator.getInstance();
+        WorldRenderer v3 = v2.getWorldRenderer();
         v3.startDrawing(3);
         v3.addVertex(axisalignedbb.minX - staticPlayerX, axisalignedbb.minY
                 - staticPlayerY, axisalignedbb.minZ - staticPlayerZ);
@@ -214,7 +215,7 @@ public final class GLHelper {
                 - staticPlayerY, axisalignedbb.maxZ - staticPlayerZ);
         v3.addVertex(axisalignedbb.minX - staticPlayerX, axisalignedbb.minY
                 - staticPlayerY, axisalignedbb.minZ - staticPlayerZ);
-        v3.draw();
+        v2.draw();
         v3.startDrawing(3);
         v3.addVertex(axisalignedbb.minX - staticPlayerX, axisalignedbb.maxY
                 - staticPlayerY, axisalignedbb.minZ - staticPlayerZ);
@@ -226,7 +227,7 @@ public final class GLHelper {
                 - staticPlayerY, axisalignedbb.maxZ - staticPlayerZ);
         v3.addVertex(axisalignedbb.minX - staticPlayerX, axisalignedbb.maxY
                 - staticPlayerY, axisalignedbb.minZ - staticPlayerZ);
-        v3.draw();
+        v2.draw();
         v3.startDrawing(1);
         v3.addVertex(axisalignedbb.minX - staticPlayerX, axisalignedbb.minY
                 - staticPlayerY, axisalignedbb.minZ - staticPlayerZ);
@@ -244,30 +245,29 @@ public final class GLHelper {
                 - staticPlayerY, axisalignedbb.maxZ - staticPlayerZ);
         v3.addVertex(axisalignedbb.minX - staticPlayerX, axisalignedbb.maxY
                 - staticPlayerY, axisalignedbb.maxZ - staticPlayerZ);
-        v3.draw();
+        v2.draw();
     }
 
-    public static void renderCylinder(double x, double y, double z, double radius, double height, int color) {
-        glPushMatrix();
-        {
-            glTranslated(x, y, z);
-            glRotated(-90, 1, 0, 0);
-            glEnable(GL_COLOR_MATERIAL);
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glDisable(GL_TEXTURE_2D);
-            glDisable(GL_DEPTH_TEST);
-            GuiUtils.color(color);
-            //Minecraft.getMinecraft().entityRenderer.disableLightmap(0);
-            cyl.draw((float) radius, (float) radius, (float) height, 32, 32);
-            Minecraft.getMinecraft().entityRenderer.enableLightmap();
-            GuiUtils.color(0xFFFFFFFF);
-            glEnable(GL_TEXTURE_2D);
-            glEnable(GL_DEPTH_TEST);
-            glDisable(GL_COLOR_MATERIAL);
-            glRotated(90, 1, 0, 0);
-            glTranslated(-x, -y, -z);
+    /*public static class CompareToPlayer implements Comparator<Point3f> {
+        public static CompareToPlayer instance = new CompareToPlayer();
+        public static boolean firstCloser(Point3f arg1, Point3f arg2) {
+            int result = CompareToPlayer.instance.compare(arg1, arg2);
+            if (result > 0) {
+                return true;
+            }
+            return false;
         }
-        glPopMatrix();
-    }
+        public int compare(Point3f arg1, Point3f arg2) {
+            Point3f playerPos = new Point3f(
+                    (float) Minecraft.getMinecraft().thePlayer.posX,
+                    (float) Minecraft.getMinecraft().thePlayer.posY,
+                    (float) Minecraft.getMinecraft().thePlayer.posZ
+            );
+            if (playerPos.distance(arg1) > playerPos.distance(arg2)) {
+                return 1;
+            } else {
+                return -1;
+            }
+        }
+    }*/
 }

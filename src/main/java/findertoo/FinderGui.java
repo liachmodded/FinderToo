@@ -24,8 +24,10 @@
  */
 package findertoo;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraftforge.fml.common.MinecraftDummyContainer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -36,4 +38,32 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  */
 @SideOnly(Side.CLIENT)
 public class FinderGui extends GuiScreen {
+    private static FinderGui instance;
+
+    protected FinderGui() {
+
+    }
+
+    /**
+     * Replace constructor.
+     */
+    public static FinderGui getInstance() {
+        if (instance == null) {
+            return null;
+        }
+        return instance;
+    }
+
+    public static void init() {
+        if (instance != null) {
+            return;
+        }
+        instance = new FinderGui();
+    }
+
+    public static void deleteGui() {
+        if (instance != null) {
+            instance = null;
+        }
+    }
 }

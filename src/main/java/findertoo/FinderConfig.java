@@ -24,32 +24,25 @@
  */
 package findertoo;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraftforge.fml.client.IModGuiFactory;
-
-import java.util.Set;
+import net.minecraftforge.common.config.Configuration;
 
 /**
- * Created by liach on 5/16/2015.
+ * Created by liach on 5/17/2015.
+ * A wrapper class.
  *
  * @author liach
  */
-public class FinderGuiFactory implements IModGuiFactory {
+public class FinderConfig {
+    private static Configuration instance;
 
-    public void initialize(Minecraft client) {
-
+    public static Configuration getInstance() {
+        if (instance == null) {
+            return null;
+        }
+        return instance;
     }
 
-    public Class<? extends GuiScreen> mainConfigGuiClass() {
-        return FinderConfigGui.class;
-    }
+    public static void load() {
 
-    public Set<RuntimeOptionCategoryElement> runtimeGuiCategories() {
-        return null;
-    }
-
-    public RuntimeOptionGuiHandler getHandlerFor(RuntimeOptionCategoryElement element) {
-        return null;
     }
 }

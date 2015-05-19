@@ -24,13 +24,17 @@
  */
 package findertoo;
 
-import net.minecraft.util.BlockPos;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.Timer;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.ModMetadata;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLModDisabledEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Logger;
@@ -50,27 +54,31 @@ import java.io.File;
         name = ForgeFinderToo.NAME,
         clientSideOnly = true,
         canBeDeactivated = true,
+        useMetadata = true,
         version = "%VERSION%",
         guiFactory = "findertoo.FinderGuiFactory"
 )
 public class ForgeFinderToo {
     public static final String NAME = "FinderToo";
     @Mod.Metadata(ForgeFinderToo.NAME)
-    public static ModMetadata ftMeta;
+    private ModMetadata ftMeta = new ModMetadata();
+    @Mod.Instance(ForgeFinderToo.NAME)
     private static ForgeFinderToo instance;
     public static Logger finderLog;
     public static File finderConfig;
+    public static float searchDistance;
 
-    static {
-        ftMeta = new ModMetadata();
-        ftMeta.credits = "By liach, library from CheatingEssentials";
+    private void initMeta() {
         ftMeta.name = ForgeFinderToo.NAME;
         ftMeta.modId = ForgeFinderToo.NAME;
         ftMeta.description = "A success of FinderMod.";
         ftMeta.url = "https://github.com/liachmodded/FinderToo";
         ftMeta.updateUrl = ftMeta.url;
         ftMeta.version = "%VERSION%";
+        ftMeta.credits = "contributors";
         ftMeta.authorList.add("liach");
+        ftMeta.screenshots=new String[0];
+        ftMeta.logoFile="";
     }
 
     @Mod.InstanceFactory
@@ -82,17 +90,19 @@ public class ForgeFinderToo {
     }
 
     @Mod.EventHandler
-    public static void preInit(FMLPreInitializationEvent event) {
+    public void preInit(FMLPreInitializationEvent event) {
+        initMeta();
         finderLog = event.getModLog();
-        finderConfig = event.getSuggestedConfigurationFile();
+        MinecraftForge.EVENT_BUS.register(new EventListener());
     }
 
     @Mod.EventHandler
-    public static void init(FMLInitializationEvent event) {
+    public void init(FMLInitializationEvent event) {
         NetworkRegistry.INSTANCE.registerGuiHandler(instance, new FinderGuiHandler());
     }
 
     @Mod.EventHandler
-    public static void disable(FMLModDisabledEvent event) {
+    public void disable(FMLModDisabledEvent event) {
+        finderLog.info("Mod disabled");
     }
 }

@@ -32,7 +32,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
- * Created by liach on 5/16/2015.
+ * The GuiHandler. Created by liach on 5/16/2015.
  *
  * @author liach
  */
@@ -43,9 +43,11 @@ public class FinderGuiHandler implements IGuiHandler {
      * A list of GUIs in FinderToo.
      */
     public enum FinderGuis {
-        FINDER_GUI(new FinderGui());
+        FINDER_GUI(FinderGui.getInstance()),
+        FINDER_CONFIG(new FinderConfigGui());
 
         private Gui ownedGui;
+
         FinderGuis(Gui gui) {
             this.ownedGui = gui;
         }
@@ -53,7 +55,7 @@ public class FinderGuiHandler implements IGuiHandler {
         protected static Gui getGuiFromId(int id) {
             try {
                 return FinderGuis.values()[id].ownedGui;
-            } catch (ArrayIndexOutOfBoundsException ex) {
+            } catch (NoSuchFieldError ex) {
                 return null;
             }
         }

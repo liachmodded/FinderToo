@@ -25,31 +25,31 @@
 package findertoo;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraftforge.fml.client.IModGuiFactory;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.BlockPos;
 
-import java.util.Set;
+import java.awt.Color;
+import java.util.Comparator;
+
+import javax.vecmath.Color3f;
+import javax.vecmath.Point3f;
 
 /**
  * Created by liach on 5/16/2015.
  *
  * @author liach
  */
-public class FinderGuiFactory implements IModGuiFactory {
+public class RgbAabb extends AxisAlignedBB {
+    public final Color color;
 
-    public void initialize(Minecraft client) {
-
+    public RgbAabb(BlockPos pos, Color color) {
+        super(pos, new BlockPos(pos.getX()+ 1, pos.getY()+ 1, pos.getZ()+ 1));
+        this.color = color;
     }
 
-    public Class<? extends GuiScreen> mainConfigGuiClass() {
-        return FinderConfigGui.class;
-    }
-
-    public Set<RuntimeOptionCategoryElement> runtimeGuiCategories() {
-        return null;
-    }
-
-    public RuntimeOptionGuiHandler getHandlerFor(RuntimeOptionCategoryElement element) {
-        return null;
+    public RgbAabb(BlockPos posA, BlockPos posB, Color color) {
+        super(posA, posB);
+        this.color = color;
     }
 }

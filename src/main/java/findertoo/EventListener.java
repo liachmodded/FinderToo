@@ -24,32 +24,34 @@
  */
 package findertoo;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraftforge.fml.client.IModGuiFactory;
-
-import java.util.Set;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.relauncher.Side;
 
 /**
- * Created by liach on 5/16/2015.
+ * Created by liach on 5/17/2015.
  *
  * @author liach
  */
-public class FinderGuiFactory implements IModGuiFactory {
+public class EventListener {
+    @SubscribeEvent
+    public void playerLoggedin(PlayerEvent.PlayerLoggedInEvent event) {
+        ForgeFinderToo.finderLog.info("Detected Player log in");
+        //FinderGui.init();
+    }
 
-    public void initialize(Minecraft client) {
+    @SubscribeEvent
+    public void playerChangedWorld(PlayerEvent.PlayerChangedDimensionEvent event) {
 
     }
 
-    public Class<? extends GuiScreen> mainConfigGuiClass() {
-        return FinderConfigGui.class;
-    }
-
-    public Set<RuntimeOptionCategoryElement> runtimeGuiCategories() {
-        return null;
-    }
-
-    public RuntimeOptionGuiHandler getHandlerFor(RuntimeOptionCategoryElement element) {
-        return null;
+    @SubscribeEvent
+    public void ticked(TickEvent event) {
+        if ((event.phase != TickEvent.Phase.START)
+                || (event.type != TickEvent.Type.CLIENT)
+                || (event.side != Side.CLIENT)) {
+            return;
+        }
     }
 }
