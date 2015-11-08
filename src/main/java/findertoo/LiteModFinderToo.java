@@ -24,25 +24,33 @@
  */
 package findertoo;
 
-import net.minecraftforge.common.config.Configuration;
+import com.mumfrey.liteloader.LiteMod;
+
+import java.io.File;
 
 /**
- * Created by liach on 5/17/2015.
- * A wrapper class.
+ * Created by liach on 11/8/2015.
  *
  * @author liach
  */
-public class FinderConfig {
-    private static Configuration instance;
+public class LiteModFinderToo implements LiteMod {
 
-    public static Configuration getInstance() {
-        if (instance == null) {
-            return null;
-        }
-        return instance;
-    }
+  public static final String NAME = "FinderToo";
+  public static final String VERSION = "0.1";
 
-    public static void load() {
+  @Override public String getName() {
+    return LiteModFinderToo.NAME;
+  }
 
-    }
+  @Override public String getVersion() {
+    return LiteModFinderToo.VERSION;
+  }
+
+  @Override public void init(File file) {
+
+  }
+
+  @Override public void upgradeSettings(String var1, File var2, File var3) {
+
+  }
 }

@@ -1,0 +1,9 @@
+{
+	"name": "FinderToo",
+	"version": "${version}",
+	"revision": "",
+	"author": "liach",
+	"mcversion": "${mcversion}",
+	"description": "Find things.",
+	"dependsOn": ["liteloader"]
+}

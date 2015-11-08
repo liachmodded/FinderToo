@@ -1,65 +1,82 @@
 buildscript {
     repositories {
-        mavenCentral()
+        jcenter()
         maven {
             name = "forge"
             url = "http://files.minecraftforge.net/maven"
         }
-        maven {
-            name = "sonatype"
-            url = "https://oss.sonatype.org/content/repositories/snapshots/"
-        }
     }
-		
     dependencies {
-	    classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.0-SNAPSHOT'
     }
 }
 
-apply plugin: 'forge'
+apply plugin: 'net.minecraftforge.gradle.tweaker-client'
 
 version = "0.1"
-group= ""
-archivesBaseName = ""
+group= "com.github.liachmodded"
+archivesBaseName = "FinderToo"
 
-repositories {
+defaultTasks 'setupDecompWorkspace', 'build'
+
+minecraft {
+    version = "1.8"
+    runDir = "run"
+	mappings = "snapshot_20150919"
+    tweakClass = 'com.mumfrey.liteloader.launch.LiteLoaderTweaker'
 }
 
 dependencies {
+    compile files('libs/liteloader-1.8-SNAPSHOT-srgnames-sources.jar')
+    compile files('libs/liteloader-1.8-SNAPSHOT-mcpnames.jar')
 }
 
-minecraft {
-    version = "1.8-11.14.1.1404"
-    runDir = "eclipse"
+task jarSrg(type: Jar) {
+    from sourceSets.main.output
+    classifier "srg"
 }
 
-configurations { 
-     api 
-     compile.extendsFrom api 
+artifacts.archives jarSrg
+
+tasks.findAll { 'make' in it.name }*.enabled = false
+
+afterEvaluate {
+	jar.manifest.attributes.remove 'TweakClass'
 }
 
-/*
-sourceSets {
-    main {
-        java {
-		    scrDir 'src/lib/java'
-            srcDir 'src/main/java'
-        }
-        resources {
-            srcDir 'src/main/resources'
-        }
+jar {
+	extension 'litemod'
+	from(configurations.compile.collect {it.isDirectory() ? it : zipTree(it)}) {
+		exclude 'META-INF/***'
+	}
+}
+
+reobf {
+	jar.task.dependsOn jarSrg
+	jarSrg {
+		useSrgSrg()
+	}
+}
+
+processResources {
+    def map = [
+        version: project.version,
+        mcversion: project.minecraft.version,
+    ]
+    
+	def tokens = ['litemod.json', 'update.json']
+
+    // this will ensure that this task is redone when the versions change.
+    inputs.properties map
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include tokens
+        // replace
+        expand map
     }
-}*/
 
-processResources
-{
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
-    from (sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-        expand 'version' : project.version, 'mcversion' : project.minecraft.version
-    }
-    from (sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude tokens
     }
 }

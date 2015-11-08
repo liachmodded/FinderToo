@@ -43,22 +43,21 @@ import javax.vecmath.Point3f;
  * @author liach
  */
 public class FinderUtil {
-    public static final float GOLDEN_RATIO = (float) (Math.sqrt(5)- 1) / 2f;
 
     public static Point3f posEntity(Entity entity) {
         return new Point3f((float) entity.posX, (float) entity.posY, (float) entity.posZ);
     }
 
-    public static AxisAlignedBB getOffsetBB(double x, double y, double z, double l, double h, double w) {
+    public static AxisAlignedBB getOffset(double x, double y, double z, double l, double h, double w) {
         return AxisAlignedBB.fromBounds(x, y, z, x + l, y + h, z + w);
     }
 
-    public static void drawEsp(RgbAabb aabb) {
-        float r = aabb.color.getRed() / 255F;
-        float g = aabb.color.getGreen() / 255F;
-        float b = aabb.color.getBlue() / 255F;
+    public static void drawEsp(DrawTarget target) {
+        float r = target.color.getRed() / 255F;
+        float g = target.color.getGreen() / 255F;
+        float b = target.color.getBlue() / 255F;
         //todo: use the distance to player to determine alpha
-        Minecraft.getMinecraft().entityRenderer.func_175072_h();
+        Minecraft.getMinecraft().entityRenderer.disableLightmap();
         glPushMatrix();
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -70,10 +69,10 @@ public class FinderUtil {
         glDepthMask(false);
         //todo: use the distance to player to determine alpha
         glColor4f(r, g, b, 0.1825F);
-        drawBoundingBox(aabb);
+        drawBoundingBox(target.aabb);
         //todo: use the distance to player to determine alpha
         glColor4f(r, g, b, 1.0F);
-        drawOutlinedBoundingBox(aabb);
+        drawOutlinedBoundingBox(target.aabb);
         glLineWidth(2.0F);
         glDisable(GL_LINE_SMOOTH);
         glEnable(GL_TEXTURE_2D);
