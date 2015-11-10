@@ -19,6 +19,9 @@ archivesBaseName = "FinderToo"
 
 defaultTasks 'setupDecompWorkspace', 'build'
 
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
 minecraft {
     version = "1.8"
     runDir = "run"
@@ -26,9 +29,48 @@ minecraft {
     tweakClass = 'com.mumfrey.liteloader.launch.LiteLoaderTweaker'
 }
 
+configurations {
+    provided
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+        resources {
+            srcDir 'src/main/resources'
+        }
+        compileClasspath += configurations.provided
+        runtimeClasspath += configurations.provided
+    }
+    /*test {
+        java {
+            srcDir 'src/main/java'
+        }
+        resources {
+            srcDir 'src/main/resources'
+        }
+        srcDir 'src/test/java'
+        compileClasspath += configurations.provided
+        runtimeClasspath += configurations.provided
+    }*/
+}
+
+eclipse {
+    classpath {
+        plusConfigurations += [configurations.provided]
+    }
+}
+
+idea {
+    module {
+        scopes.PROVIDED.plus += [configurations.provided]
+    }
+}
+
 dependencies {
-    compile files('libs/liteloader-1.8-SNAPSHOT-srgnames-sources.jar')
-    compile files('libs/liteloader-1.8-SNAPSHOT-mcpnames.jar')
+    provided fileTree(dir: 'libs', include: '*.jar')
 }
 
 task jarSrg(type: Jar) {
@@ -39,6 +81,11 @@ task jarSrg(type: Jar) {
 artifacts.archives jarSrg
 
 tasks.findAll { 'make' in it.name }*.enabled = false
+
+tasks.withType(Javadoc) {
+    // disable the crazy super-strict doclint tool in Java 8
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
 
 afterEvaluate {
 	jar.manifest.attributes.remove 'TweakClass'

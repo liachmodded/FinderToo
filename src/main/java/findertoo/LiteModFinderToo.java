@@ -27,6 +27,7 @@ package findertoo;
 import com.mumfrey.liteloader.LiteMod;
 
 import java.io.File;
+import java.nio.file.Path;
 
 /**
  * Created by liach on 11/8/2015.
@@ -46,8 +47,8 @@ public class LiteModFinderToo implements LiteMod {
     return LiteModFinderToo.VERSION;
   }
 
-  @Override public void init(File file) {
-
+  @Override public void init(File configPath) {
+    Path path = configPath.toPath();
   }
 
   @Override public void upgradeSettings(String var1, File var2, File var3) {
