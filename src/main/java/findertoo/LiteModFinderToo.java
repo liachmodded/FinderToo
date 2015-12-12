@@ -24,17 +24,23 @@
  */
 package findertoo;
 
-import com.mumfrey.liteloader.LiteMod;
+import com.mumfrey.liteloader.PostRenderListener;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.entity.Entity;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Created by liach on 11/8/2015.
  *
  * @author liach
  */
-public class LiteModFinderToo implements LiteMod {
+@SuppressWarnings("unused")
+public class LiteModFinderToo implements PostRenderListener {
 
   public static final String NAME = "FinderToo";
   public static final String VERSION = "0.1";
@@ -47,11 +53,22 @@ public class LiteModFinderToo implements LiteMod {
     return LiteModFinderToo.VERSION;
   }
 
-  @Override public void init(File configPath) {
-    Path path = configPath.toPath();
+  @Override public void init(File configFile) {
+    Path configPath = configFile.toPath();
   }
 
-  @Override public void upgradeSettings(String var1, File var2, File var3) {
+  @Override public void upgradeSettings(String version, File configPath, File oldConfigPath) {
+  }
 
+  @Override public void onPostRenderEntities(float partialTicks) {}
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public void onPostRender(float partialTicks) {
+    WorldClient world = Minecraft.getMinecraft().theWorld;
+    EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
+    for (Entity ent: (List<Entity>) world.loadedEntityList) {
+
+    }
   }
 }
