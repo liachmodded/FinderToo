@@ -5,17 +5,23 @@ buildscript {
             name = "forge"
             url = "http://files.minecraftforge.net/maven"
         }
+        maven {
+            name = 'sponge'
+            url = 'http://repo.spongepowered.org/maven'
+        }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.0-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath 'org.spongepowered:mixingradle:0.4-SNAPSHOT'
     }
 }
 
-apply plugin: 'net.minecraftforge.gradle.tweaker-client'
+apply plugin: 'net.minecraftforge.gradle.liteloader'
+apply plugin: 'org.spongepowered.mixin'
 
 version = "0.1"
 group= "com.github.liachmodded"
-archivesBaseName = "FinderToo"
+archivesBaseName = "findertoo"
 
 defaultTasks 'setupDecompWorkspace', 'build'
 
@@ -23,10 +29,9 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 minecraft {
-    version = "1.8"
+    version = "1.11.2"
     runDir = "run"
-	mappings = "snapshot_20150919"
-    tweakClass = 'com.mumfrey.liteloader.launch.LiteLoaderTweaker'
+	mappings = "snapshot_20170324"
 }
 
 configurations {
@@ -44,17 +49,6 @@ sourceSets {
         compileClasspath += configurations.provided
         runtimeClasspath += configurations.provided
     }
-    /*test {
-        java {
-            srcDir 'src/main/java'
-        }
-        resources {
-            srcDir 'src/main/resources'
-        }
-        srcDir 'src/test/java'
-        compileClasspath += configurations.provided
-        runtimeClasspath += configurations.provided
-    }*/
 }
 
 eclipse {
@@ -66,21 +60,9 @@ eclipse {
 idea {
     module {
         scopes.PROVIDED.plus += [configurations.provided]
+        inheritOutputDirs true
     }
 }
-
-dependencies {
-    provided fileTree(dir: 'libs', include: '*.jar')
-}
-
-task jarSrg(type: Jar) {
-    from sourceSets.main.output
-    classifier "srg"
-}
-
-artifacts.archives jarSrg
-
-tasks.findAll { 'make' in it.name }*.enabled = false
 
 tasks.withType(Javadoc) {
     // disable the crazy super-strict doclint tool in Java 8
@@ -91,18 +73,30 @@ afterEvaluate {
 	jar.manifest.attributes.remove 'TweakClass'
 }
 
-jar {
-	extension 'litemod'
-	from(configurations.compile.collect {it.isDirectory() ? it : zipTree(it)}) {
-		exclude 'META-INF/***'
-	}
+sourceSets {
+    main {
+        // Refmap declaration must match the refmap name specified in the json config
+        refMap = "mixins.findertoo.refmap.json"
+    }
 }
 
-reobf {
-	jar.task.dependsOn jarSrg
-	jarSrg {
-		useSrgSrg()
-	}
+mixin {
+    defaultObfuscationEnv notch
+}
+
+litemod {
+    json {
+        name = "FinderToo"
+        displayName = "Finder too"
+        author = "liach"
+        mcversion = "1.11.2"
+        mixinConfigs += "mixins.findertoo.json"
+        version = project.version
+    }
+}
+
+jar {
+    from litemod.outputs
 }
 
 processResources {

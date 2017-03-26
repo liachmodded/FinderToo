@@ -25,14 +25,14 @@
 package findertoo;
 
 import com.mumfrey.liteloader.PostRenderListener;
+import com.mumfrey.liteloader.Tickable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.entity.Entity;
+import net.minecraft.tileentity.TileEntityMobSpawner;
+import net.minecraft.util.math.AxisAlignedBB;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.util.List;
 
 /**
  * Created by liach on 11/8/2015.
@@ -40,35 +40,47 @@ import java.util.List;
  * @author liach
  */
 @SuppressWarnings("unused")
-public class LiteModFinderToo implements PostRenderListener {
+public class LiteModFinderToo implements PostRenderListener, Tickable {
 
-  public static final String NAME = "FinderToo";
-  public static final String VERSION = "0.1";
+    public static final String NAME = "FinderToo";
+    public static final String VERSION = "0.1";
 
-  @Override public String getName() {
-    return LiteModFinderToo.NAME;
-  }
-
-  @Override public String getVersion() {
-    return LiteModFinderToo.VERSION;
-  }
-
-  @Override public void init(File configFile) {
-    Path configPath = configFile.toPath();
-  }
-
-  @Override public void upgradeSettings(String version, File configPath, File oldConfigPath) {
-  }
-
-  @Override public void onPostRenderEntities(float partialTicks) {}
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public void onPostRender(float partialTicks) {
-    WorldClient world = Minecraft.getMinecraft().theWorld;
-    EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
-    for (Entity ent: (List<Entity>) world.loadedEntityList) {
-
+    @Override
+    public String getName() {
+        return LiteModFinderToo.NAME;
     }
-  }
+
+    @Override
+    public String getVersion() {
+        return LiteModFinderToo.VERSION;
+    }
+
+    @Override
+    public void init(File configFile) {
+    }
+
+    @Override
+    public void upgradeSettings(String version, File configPath, File oldConfigPath) {
+    }
+
+    @Override
+    public void onPostRenderEntities(float partialTicks) {
+        Minecraft.getMinecraft().world.loadedEntityList.stream()
+            .filter(Entity::isEntityAlive)
+            .filter(Entity::isInvisible).forEach(entity ->
+            RenderGlobal.drawSelectionBoundingBox(entity.getEntityBoundingBox(), 1F, 0F, 0F, .5F));
+    }
+
+    @Override
+    public void onPostRender(float partialTicks) {
+        Minecraft.getMinecraft().world.loadedTileEntityList.stream()
+            .filter(te -> te.getClass() == TileEntityMobSpawner.class)
+            .forEach(te ->
+                RenderGlobal.drawSelectionBoundingBox(new AxisAlignedBB(te.getPos()), 0F, 1F, 0F, .5F));
+    }
+
+    @Override
+    public void onTick(Minecraft minecraft, float partialTicks, boolean inGame, boolean clock) {
+        //        throw new UnsupportedOperationException("not implemented"); //TODO Implement this
+    }
 }
